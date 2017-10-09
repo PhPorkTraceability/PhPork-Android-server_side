@@ -21,7 +21,7 @@ if(strcasecmp($_SERVER['REQUEST_METHOD'], 'POST') != 0) {
 	} else {
 		
 		//Receive the RAW post data.
-		file_put_contents('test_2.txt', file_get_contents('php://input'));
+		file_put_contents('test_4.txt', file_get_contents('php://input'));
 
 		$content = file_get_contents("php://input");
 
