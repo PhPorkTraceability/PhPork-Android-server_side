@@ -187,11 +187,22 @@ class DB_Functions {
         return $result;
     }
 
-  public function addGPXInfo($log_point, $time_record, $latitude, $longtitude, $altitude, $accuracy, $date_logged)
+    public function addGPXInfo($log_point, $time_record, $latitude, $longtitude, $altitude, $accuracy, $date_logged)
     {
         $stmt = $this->conn->prepare("INSERT INTO gpx_log_info(log_point, time_record, latitude, longtitude, altitude, accuracy, date_logged, sync_status) VALUES(?,?,?,?,?,?,?,'new')");
  
         $stmt->bind_param("sssssss", $log_point, $time_record, $latitude, $longtitude, $altitude, $accuracy, $date_logged);
+        $result = $stmt->execute();
+        $stmt->close();
+
+        return $result;
+    }
+
+    public function addSlaughterPig($sl_stat, $sl_timestamp, $pig_id)
+    {
+        $stmt = $this->conn->prepare("INSERT INTO slaughter_pig(slaughter_stat, slaughter_timestamp, pig_id, sync_status) VALUES(?,?,?,'new')");
+ 
+        $stmt->bind_param("sss", $sl_stat, $sl_timestamp, $pig_id);
         $result = $stmt->execute();
         $stmt->close();
 
@@ -232,7 +243,7 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updateHouseSync($id) {
+    public function updateHouseSync($id) {
         $stmt = $this->conn->prepare("UPDATE house SET sync_status = 'old' WHERE house_id = ?");
  
         $stmt->bind_param("s", $id);
@@ -242,7 +253,7 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updatePenSync($id) {
+    public function updatePenSync($id) {
         $stmt = $this->conn->prepare("UPDATE pen SET sync_status = 'old' WHERE pen_id = ?");
  
         $stmt->bind_param("s", $id);
@@ -252,7 +263,7 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updateBreedSync($id) {
+    public function updateBreedSync($id) {
         $stmt = $this->conn->prepare("UPDATE pig_breeds SET sync_status = 'old' WHERE breed_id = ?");
  
         $stmt->bind_param("s", $id);
@@ -262,7 +273,7 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updateParentSync($id) {
+    public function updateParentSync($id) {
         $stmt = $this->conn->prepare("UPDATE parents SET sync_status = 'old' WHERE parent_id = ?");
  
         $stmt->bind_param("s", $id);
@@ -272,7 +283,7 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updatePigSync($id) {
+    public function updatePigSync($id) {
         $stmt = $this->conn->prepare("UPDATE pig SET sync_status = 'old' WHERE pig_id = ?");
  
         $stmt->bind_param("s", $id);
@@ -282,7 +293,7 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updateTagSync($id) {
+    public function updateTagSync($id) {
         $stmt = $this->conn->prepare("UPDATE rfid_tags SET sync_status = 'old' WHERE tag_id = ?");
  
         $stmt->bind_param("s", $id);
@@ -292,7 +303,7 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updateFeedSync($id) {
+    public function updateFeedSync($id) {
         $stmt = $this->conn->prepare("UPDATE feeds SET sync_status = 'old' WHERE feed_id = ?");
  
         $stmt->bind_param("s", $id);
@@ -302,7 +313,7 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updateFTSync($id) {
+    public function updateFTSync($id) {
         $stmt = $this->conn->prepare("UPDATE feed_transaction SET sync_status = 'old' WHERE ft_id = ?");
  
         $stmt->bind_param("s", $id);
@@ -312,7 +323,7 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updateMedSync($id) {
+    public function updateMedSync($id) {
         $stmt = $this->conn->prepare("UPDATE medication SET sync_status = 'old' WHERE med_id = ?");
  
         $stmt->bind_param("s", $id);
@@ -322,7 +333,7 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updateMedRecSync($id) {
+    public function updateMedRecSync($id) {
         $stmt = $this->conn->prepare("UPDATE med_record SET sync_status = 'old' WHERE mr_id = ?");
  
         $stmt->bind_param("s", $id);
@@ -332,7 +343,7 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updateWeightSync($id) {
+    public function updateWeightSync($id) {
         $stmt = $this->conn->prepare("UPDATE weight_record SET sync_status = 'old' WHERE record_id = ?");
  
         $stmt->bind_param("s", $id);
@@ -342,7 +353,7 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updateMovementSync($id) {
+    public function updateMovementSync($id) {
         $stmt = $this->conn->prepare("UPDATE movement SET sync_status = 'old' WHERE movement_id = ?");
 
         $stmt->bind_param("s", $id);
@@ -352,10 +363,20 @@ class DB_Functions {
         return $result;        
     }
 
-     public function updateUserTransSync($id) {
+    public function updateUserTransSync($id) {
         $stmt = $this->conn->prepare("UPDATE user_transaction SET sync_status = 'old' WHERE trans_id = ?");
  
         $stmt->bind_param("s", $id);
+        $result = $stmt->execute();
+        $stmt->close();
+
+        return $result;        
+    }
+
+    public function updatePigSlaughter($id, $pig_stat, $user) {
+        $stmt = $this->conn->prepare("UPDATE pig SET pig_status = ?, user = ?, sync_status = 'old' WHERE pig_id = ?");
+ 
+        $stmt->bind_param("sss", $pig_stat, $user, $id);
         $result = $stmt->execute();
         $stmt->close();
 
@@ -443,7 +464,7 @@ class DB_Functions {
 
     public function getPigs() {
  
-        $stmt = $this->conn->prepare("SELECT * FROM pig WHERE pig_status <> 'mortality' AND pig_status <> 'slaughter' AND pig_status <> 'condemn'");
+        $stmt = $this->conn->prepare("SELECT * FROM pig WHERE pig_status <> 'mortality' AND pig_status <> 'condemn' AND pig_status <> 'accepted' AND pig_status <> 'rejected'");
         
         if ($stmt->execute()) {
             $result = $stmt->get_result()->fetch_all();
@@ -455,7 +476,7 @@ class DB_Functions {
 
     public function getWeightRecords() {
  
-        $stmt = $this->conn->prepare("SELECT * FROM weight_record a JOIN pig b ON(a.pig_id = b.pig_id) WHERE b.pig_status <> 'mortality' AND pig_status <> 'slaughter' AND pig_status <> 'condemn'");
+        $stmt = $this->conn->prepare("SELECT * FROM weight_record a JOIN pig b ON(a.pig_id = b.pig_id) WHERE b.pig_status <> 'mortality' AND b.pig_status <> 'accepted' AND b.pig_status <> 'rejected' AND b.pig_status <> 'condemn'");
         
         
         if ($stmt->execute()) {
@@ -471,7 +492,7 @@ class DB_Functions {
         $stmt = $this->conn->prepare("SELECT a.tag_id, a.tag_rfid, a.pig_id, a.label, a.status
                                         FROM rfid_tags a JOIN pig b USING(pig_id)                            
                                         WHERE a.status <> 'lost' AND status <> 'inactive' AND status <> 'marker'
-                                        AND b.pig_status <> 'mortality' AND pig_status <> 'slaughter' AND pig_status <> 'condemn'");
+                                        AND b.pig_status <> 'mortality' AND b.pig_status <> 'condemn' AND b.pig_status <> 'accepted' AND b.pig_status <> 'rejected'");
         
         if ($stmt->execute()) {
             $result = $stmt->get_result()->fetch_all();
@@ -552,7 +573,7 @@ class DB_Functions {
 
         $stmt = $this->conn->prepare("SELECT movement_id, MAX(date_moved), MAX(time_moved), pen_id, MAX(server_date), MAX(server_time), pig_id
                                         FROM movement
-                                        WHERE sync_status = 'new'
+                                        -- WHERE sync_status = 'new'
                                         GROUP BY pig_id");
         
         if ($stmt->execute()) {
